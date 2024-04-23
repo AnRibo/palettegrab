@@ -1,0 +1,49 @@
+# imports
+import pygame
+from PIL import Image
+from PIL import ImageGrab
+
+# initiate pygame
+pygame.init()
+screen = pygame.display.set_mode((100, 100))
+
+TRANSPARENT = (0, 0, 0)  # transparent is usually (0, 0, 0, 0)
+
+# grab image from clipboard
+clipboard = ImageGrab.grabclipboard()
+image = Image.new("RGB", clipboard.size, TRANSPARENT)
+image.paste(clipboard)
+
+# convert PIL image to pygame image
+mode = image.mode
+size = image.size
+data = image.tobytes()
+palette_img = pygame.image.frombytes(data, size, mode)
+
+# convert to surface object
+palette_surface = pygame.Surface(size)
+palette_surface.set_colorkey(TRANSPARENT)
+palette_surface.fill(TRANSPARENT)
+palette_surface.blit(palette_img, (0, 0))
+
+# make a list of unique colors
+identified_colors = []
+for x in range(size[0]):
+    for y in range(size[1]):
+        color_object = palette_surface.get_at((x, y))
+        if color_object not in identified_colors:
+            identified_colors.append(color_object)
+
+# convert to RGB, except for transparent
+RGBs = []
+for color_object in identified_colors:
+    RGB = (color_object.r, color_object.g, color_object.b)
+    if RGB != TRANSPARENT:
+        RGBs.append(RGB)
+
+# print RGBs as python dictionary entries
+print("colors[palette] = " + str(RGBs))
+RGBs.sort(key=lambda entry: (entry[0] + entry[1] + entry[2]))
+print("colors[palette_sorted] = " + str(RGBs))
+
+exit()
